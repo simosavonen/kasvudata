@@ -4,6 +4,8 @@ const express = require('express')
 const app = express()
 
 const sensorsRouter = require('./controllers/sensors')
+const filesRouter = require('./controllers/files')
+
 const mongoose = require('mongoose')
 
 mongoose.connect(config.MONGODB_URI)
@@ -17,5 +19,6 @@ mongoose.connect(config.MONGODB_URI)
 app.use(express.json())
 
 app.use('/api/sensors', sensorsRouter)
+app.use('/api/files', filesRouter)
 
 module.exports = app
