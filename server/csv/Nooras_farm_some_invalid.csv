@@ -1,0 +1,7 @@
+location,datetime,sensorType,value
+Noora's farm,2018-12-31T22:00:00.000Z,pH,20
+Noora's farm,2018-12-31T22:00:00.000Z,rainFall,2000
+Noora's farm,2019-01-01T11:19:44.018Z,temperature,-300
+Noora's farm,2019-01-02T11:19:44.018Z,pH,6
+Noora's farm,2019-01-02T11:19:44.018Z,rainFall,5
+Noora's farm,2019-01-02T14:55:27.420Z,temperature,20

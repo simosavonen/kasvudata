@@ -16,7 +16,8 @@ const sensorSchema = new mongoose.Schema({
       type: [Number] // [longitude, latitude]
     }
   },
-  public: Boolean
+  public: Boolean,
+  lastUpdated: Date
 })
 
 sensorSchema.set('toJSON', {
