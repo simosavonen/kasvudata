@@ -18,14 +18,12 @@ const saveToDatabase = async (data) => {
   const sensor = await Sensor.findOneAndUpdate(query, update, options)
   
   const readings = data.map(row => {    
-    const sensorType = row.sensorType.toLowerCase()
-    if(!['rainfall', 'temperature', 'ph'].includes(sensorType)) return 
-
     let reading = {
       sensor: sensor._id,
       dateTime: new Date(row.datetime)
     }
     
+    const sensorType = row.sensorType.toLowerCase()
     if(sensorType === 'rainfall') reading = { ...reading, rainFall: row.value }
     if(sensorType === 'temperature') reading = { ...reading, temperature: row.value }
     if(sensorType === 'ph') reading = { ...reading, pH: row.value }
@@ -37,7 +35,7 @@ const saveToDatabase = async (data) => {
   
   const saved = results.insertedCount ? results.insertedCount : 0
   const rejected = results.mongoose.validationErrors.length ? results.mongoose.validationErrors.length : 0  
-  logger.info(`Parsed ${data.length} readings, ${saved} were saved, ${rejected} were rejected.`)
+  logger.info(`Parsed ${data.length} readings, ${saved} saved, ${rejected} rejected.`)
 }
 
 filesRouter.get('/', (request, response) => {
@@ -67,7 +65,7 @@ filesRouter.post('/', (request, response) => {
       })
   })   
   bb.on('close', () => { 
-    logger.info('busboy finished')
+    
   })
   request.pipe(bb)
 })
