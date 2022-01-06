@@ -1,24 +1,31 @@
 const mongoose = require('mongoose')
 
+let tomorrow = new Date()
+tomorrow.setDate(tomorrow.getDate() + 1)
+
 const readingSchema = new mongoose.Schema({
-  sensor: mongoose.ObjectId,
-  dateTime: Date,
+  sensor: { type: mongoose.ObjectId, required: true },
+  dateTime: { 
+    type: Date, 
+    required: true,
+    max: tomorrow.toISOString().split('T')[0]
+  },
   rainFall: {
     type: Number,
     min: 0,
-    max: 1000
+    max: 500    
   },
   temperature: {
     type: Number,
-    min: -100,
-    max: 100
+    min: -50,
+    max: 100    
   },
   pH: {
     type: Number,
-    min: -10,
-    max: 10
-  }
-  
+    min: 0,
+    max: 14    
+  }  
+
 })
 
 readingSchema.set('toJSON', {

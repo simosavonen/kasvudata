@@ -2,6 +2,3 @@ location,datetime,sensorType,value
 Noora's farm,2018-12-31T22:00:00.000Z,pH,5.88
 Noora's farm,2018-12-31T22:00:00.000Z,rainFall,3.1
 Noora's farm,2019-01-01T11:19:44.018Z,temperature,-8.3
-Noora's farm,2019-01-02T11:19:44.018Z,pH,6.21
-Noora's farm,2019-01-02T11:19:44.018Z,rainFall,5.9
-Noora's farm,2019-01-02T14:55:27.420Z,temperature,-15.4
