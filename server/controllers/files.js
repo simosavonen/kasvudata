@@ -13,7 +13,7 @@ const saveToDatabase = async (data) => {
   }
   
   const query = { name: data[0].location }
-  const update = { lastUpdated: Date.now() }
+  const update = {}
   const options = { upsert: true, returnDocument: 'after' }
   const sensor = await Sensor.findOneAndUpdate(query, update, options)
   

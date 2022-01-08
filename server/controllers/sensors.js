@@ -12,10 +12,7 @@ sensorsRouter.post('/', (request, response, next) => {
 
   const sensor = new Sensor({
     name: body.name,
-    address: body.address,
-    city: body.city,
-    location: body.location,
-    public: body.public || true
+    sensorType: body.sensorType
   })
 
   sensor.save()

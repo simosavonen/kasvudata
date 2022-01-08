@@ -1,24 +1,21 @@
 const mongoose = require('mongoose')
+const readingSchema = require('./reading')
 
 const sensorSchema = new mongoose.Schema({
   name: { 
     type: String, 
     required: true
   },
-  address: String,
-  city: String,
-  location: {
-    type: {
-      type: String, 
-      enum: ['Point']
-    },
-    coordinates: {
-      type: [Number] // [longitude, latitude]
-    }
+  sensorType: {
+    type: String,
+    enum: ['rainFall', 'temperature', 'pH'],
+    required: true
   },
-  public: Boolean,
-  lastUpdated: Date
-})
+  readings: [readingSchema]
+}, 
+{ timestamps: true })
+
+sensorSchema.index({ name: 1, sensorType: 1}, { unique: true })
 
 sensorSchema.set('toJSON', {
   transform: (document, returnedObject) => {
