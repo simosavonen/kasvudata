@@ -1,41 +1,69 @@
 const filesRouter = require('express').Router()
-const Reading = require('../models/reading')
 const Sensor = require('../models/sensor')
 const path = require('path')
 const busboy = require('busboy')
 const { parse } = require('fast-csv')
 const logger = require('../utils/logger')
 
+const minValues = {
+  'rainFall': 0,
+  'temperature': -50,
+  'pH': 0
+}
+
+const maxValues = {
+  'rainFall': 500,
+  'temperature': 100,
+  'pH': 14
+}
+
+const isValidated = (row) => {
+  return row.value >= minValues[row.sensorType] && 
+    row.value <= maxValues[row.sensorType]
+}
+
 const saveToDatabase = async (data) => {
   if(data.length == 0 || data[0].location === undefined) {
     logger.error('saveToDatabase was given bad data')
     return 
   }
-  
-  const query = { name: data[0].location }
-  const update = {}
-  const options = { upsert: true, returnDocument: 'after' }
-  const sensor = await Sensor.findOneAndUpdate(query, update, options)
-  
-  const readings = data.map(row => {    
-    let reading = {
-      sensor: sensor._id,
-      dateTime: new Date(row.datetime)
-    }
+
+  const readings = {
+    name: data[0].location,
+    rainFall: [],
+    temperature: [],
+    pH: []
+  }
+
+  for (const row of data) {
+    if(readings[row.sensorType] !== undefined && Array.isArray(readings[row.sensorType]))
+      if(isValidated(row)) readings[row.sensorType].push(
+        { 
+          dateTime: row.datetime, 
+          value: row.value 
+        })
+  }
+
+  try {
+
+    if(readings.rainFall.length) await Sensor.findOneAndUpdate(
+      { name: readings.name, sensorType: 'rainFall'}, 
+      { $addToSet: { readings: { $each: readings.rainFall }}}, 
+      { upsert: true })      
     
-    const sensorType = row.sensorType.toLowerCase()
-    if(sensorType === 'rainfall') reading = { ...reading, rainFall: row.value }
-    if(sensorType === 'temperature') reading = { ...reading, temperature: row.value }
-    if(sensorType === 'ph') reading = { ...reading, pH: row.value }
-    
-    return reading
-  })
+    if(readings.temperature.length) await Sensor.findOneAndUpdate(
+      { name: readings.name, sensorType: 'temperature'}, 
+      { $addToSet: { readings: { $each: readings.temperature }}}, 
+      { upsert: true })
   
-  const results = await Reading.insertMany(readings, { ordered: false, rawResult: true })
-  
-  const saved = results.insertedCount ? results.insertedCount : 0
-  const rejected = results.mongoose.validationErrors.length ? results.mongoose.validationErrors.length : 0  
-  logger.info(`Parsed ${data.length} readings, ${saved} saved, ${rejected} rejected.`)
+    if(readings.pH.length) await Sensor.findOneAndUpdate(
+      { name: readings.name, sensorType: 'pH'}, 
+      { $addToSet: { readings: { $each: readings.pH }}}, 
+      { upsert: true })
+
+  } catch (error) {
+    logger.error(error)
+  }  
 }
 
 filesRouter.get('/', (request, response) => {
@@ -43,8 +71,8 @@ filesRouter.get('/', (request, response) => {
 })
 
 filesRouter.post('/', (request, response) => {
-  let rows = []  
-
+  let rows = []
+ 
   const bb = busboy({ headers: request.headers })
   bb.on('file', (name, file) => {
     const parser = parse({ headers: true, ignoreEmpty: true })
@@ -54,14 +82,18 @@ filesRouter.post('/', (request, response) => {
         rows.push(row)
         if(rows.length > 999) {
           parser.pause()
-          saveToDatabase(rows)          
-          rows = []
-          parser.resume()
+          saveToDatabase(rows)
+            .then(() => {
+              rows = []
+              parser.resume()
+            })      
         }        
       }) 
       .on('end', rowCount => {
-        if(rows.length > 0) saveToDatabase(rows)
-        response.status(201).json({ parsed: rowCount })     
+        if(rows.length > 0) {
+          saveToDatabase(rows)            
+          response.status(201).json({ parsed: rowCount })           
+        }
       })
   })   
   bb.on('close', () => { 

@@ -12,10 +12,9 @@ const sensorSchema = new mongoose.Schema({
     required: true
   },
   readings: [readingSchema]
-}, 
-{ timestamps: true })
+})
 
-sensorSchema.index({ name: 1, sensorType: 1}, { unique: true })
+sensorSchema.index({ name: 1, sensorType: 1 }, { unique: true })
 
 sensorSchema.set('toJSON', {
   transform: (document, returnedObject) => {

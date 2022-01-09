@@ -7,6 +7,7 @@ const sensorsRouter = require('./controllers/sensors')
 const filesRouter = require('./controllers/files')
 
 const mongoose = require('mongoose')
+//mongoose.set('debug', true)
 
 mongoose.connect(config.MONGODB_URI)
   .then(() => {
