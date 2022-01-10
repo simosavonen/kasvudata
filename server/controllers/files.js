@@ -5,21 +5,26 @@ const busboy = require('busboy')
 const { parse } = require('fast-csv')
 const logger = require('../utils/logger')
 
-const minValues = {
-  'rainFall': 0,
-  'temperature': -50,
-  'pH': 0
-}
-
-const maxValues = {
-  'rainFall': 500,
-  'temperature': 100,
-  'pH': 14
-}
-
 const isValidated = (row) => {
-  return row.value >= minValues[row.sensorType] && 
-    row.value <= maxValues[row.sensorType]
+  let tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  //const date = new Date(row.dateTime)
+  
+  const minValues = {
+    'rainFall': 0,
+    'temperature': -50,
+    'pH': 0
+  }
+  
+  const maxValues = {
+    'rainFall': 500,
+    'temperature': 100,
+    'pH': 14
+  }  
+
+  return minValues[row.sensorType] !== undefined &&
+         row.value >= minValues[row.sensorType] && 
+         row.value <= maxValues[row.sensorType] 
 }
 
 const saveToDatabase = async (data) => {
@@ -29,38 +34,24 @@ const saveToDatabase = async (data) => {
   }
 
   const readings = {
-    name: data[0].location,
     rainFall: [],
     temperature: [],
     pH: []
   }
 
-  for (const row of data) {
-    if(readings[row.sensorType] !== undefined && Array.isArray(readings[row.sensorType]))
-      if(isValidated(row)) readings[row.sensorType].push(
-        { 
-          dateTime: row.datetime, 
-          value: row.value 
-        })
+  for (const row of data) {    
+    if(isValidated(row)) 
+      readings[row.sensorType].push({ dateTime: row.datetime, value: row.value })
   }
 
   try {
-
-    if(readings.rainFall.length) await Sensor.findOneAndUpdate(
-      { name: readings.name, sensorType: 'rainFall'}, 
-      { $addToSet: { readings: { $each: readings.rainFall }}}, 
-      { upsert: true })      
-    
-    if(readings.temperature.length) await Sensor.findOneAndUpdate(
-      { name: readings.name, sensorType: 'temperature'}, 
-      { $addToSet: { readings: { $each: readings.temperature }}}, 
-      { upsert: true })
-  
-    if(readings.pH.length) await Sensor.findOneAndUpdate(
-      { name: readings.name, sensorType: 'pH'}, 
-      { $addToSet: { readings: { $each: readings.pH }}}, 
-      { upsert: true })
-
+    for (const sensorType in readings) {      
+      await Sensor.findOneAndUpdate(
+        { name: data[0].location, sensorType: sensorType },
+        { $addToSet: { readings: { $each: readings[sensorType] }}},
+        { upsert: true }
+      )
+    }   
   } catch (error) {
     logger.error(error)
   }  
