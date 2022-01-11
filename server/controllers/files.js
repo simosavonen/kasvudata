@@ -4,11 +4,11 @@ const path = require('path')
 const busboy = require('busboy')
 const { parse } = require('fast-csv')
 const logger = require('../utils/logger')
+const dayjs = require('dayjs')
 
 const isValidated = (row) => {
-  let tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  //const date = new Date(row.dateTime)
+  const tomorrow = dayjs().add('1', 'day')
+  const date = dayjs(row.datetime)
   
   const minValues = {
     'rainFall': 0,
@@ -20,11 +20,12 @@ const isValidated = (row) => {
     'rainFall': 500,
     'temperature': 100,
     'pH': 14
-  }  
+  }
 
   return minValues[row.sensorType] !== undefined &&
          row.value >= minValues[row.sensorType] && 
-         row.value <= maxValues[row.sensorType] 
+         row.value <= maxValues[row.sensorType] &&
+         date.isBefore(tomorrow)
 }
 
 const saveToDatabase = async (data) => {
@@ -41,7 +42,7 @@ const saveToDatabase = async (data) => {
 
   for (const row of data) {    
     if(isValidated(row)) 
-      readings[row.sensorType].push({ dateTime: row.datetime, value: row.value })
+      readings[row.sensorType].push({ datetime: row.datetime, value: row.value })
   }
 
   try {

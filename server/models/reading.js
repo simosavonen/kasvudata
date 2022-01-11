@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const readingSchema = new mongoose.Schema({
   _id: false,
-  dateTime: { 
+  datetime: { 
     type: Date, 
     required: true
   },
