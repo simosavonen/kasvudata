@@ -2,7 +2,8 @@ const sensorsRouter = require('express').Router()
 const Sensor = require('../models/sensor')
 
 sensorsRouter.get('/', (request, response) => {
-  Sensor.find({}).then(sensors => {
+  Sensor.find({}, { readings: { $slice: -30 }}
+  ).then(sensors => {
     response.json(sensors.map(sensor => sensor.toJSON()))
   })
 })

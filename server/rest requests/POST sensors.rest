@@ -3,11 +3,5 @@ Content-Type: application/json
 
 {
     "name": "Kaupunginkirjasto",
-    "address": "Lautakunnankatu 1",
-    "city": "Kaarina",
-    "location": {
-        "type": "Point",
-        "coordinates": [22.368027, 60.408285]
-    },
-    "public": true
+    "sensorType": "rainFall"
 }
