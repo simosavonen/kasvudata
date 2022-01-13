@@ -52,6 +52,10 @@ const saveToDatabase = async (data) => {
         { $addToSet: { readings: { $each: readings[sensorType] }}},
         { upsert: true }
       )
+      await Sensor.findOneAndUpdate(
+        { name: data[0].location, sensorType: sensorType },
+        { $push: { readings: { $each: [], $sort: { datetime: -1 }}}}
+      )
     }   
   } catch (error) {
     logger.error(error)
