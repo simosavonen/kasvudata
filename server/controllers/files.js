@@ -39,10 +39,13 @@ const saveToDatabase = async (data) => {
     temperature: [],
     pH: []
   }
-
+  
+  let validatedCount = 0
   for (const row of data) {    
-    if(isValidated(row)) 
+    if(isValidated(row)) {
+      validatedCount++
       readings[row.sensorType].push({ datetime: row.datetime, value: row.value })
+    } 
   }
 
   try {
@@ -61,7 +64,8 @@ const saveToDatabase = async (data) => {
     }   
   } catch (error) {
     logger.error(error)
-  }  
+  }
+  return Promise.resolve(validatedCount) 
 }
 
 filesRouter.get('/', (request, response) => {
@@ -70,27 +74,32 @@ filesRouter.get('/', (request, response) => {
 
 filesRouter.post('/', (request, response) => {
   let rows = []
+  let validatedCount = 0
  
   const bb = busboy({ headers: request.headers })
   bb.on('file', (name, file) => {
     const parser = parse({ headers: true, ignoreEmpty: true })
     file.pipe(parser)
       .on('error', error => logger.error(error))
-      .on('data', row => {        
+      .on('data', async row => {        
         rows.push(row)
         if(rows.length > 999) {
           parser.pause()
-          saveToDatabase(rows)
-            .then(() => {
-              rows = []
-              parser.resume()
-            })      
+          const result = await saveToDatabase(rows)            
+          rows = []
+          validatedCount += result
+          parser.resume()
+                
         }        
       }) 
-      .on('end', rowCount => {
+      .on('end', async rowCount => {
         if(rows.length > 0) {
-          saveToDatabase(rows)            
-          response.status(201).json({ parsed: rowCount })           
+          const result = await saveToDatabase(rows)            
+          validatedCount += result
+          response.status(201).json({ 
+            parsed: rowCount,
+            validated: validatedCount              
+          })                  
         }
       })
   })   
