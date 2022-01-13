@@ -46,12 +46,14 @@ const saveToDatabase = async (data) => {
   }
 
   try {
-    for (const sensorType in readings) {      
+    for (const sensorType in readings) {
+      // prevent duplicates while adding readings      
       await Sensor.findOneAndUpdate(
         { name: data[0].location, sensorType: sensorType },
         { $addToSet: { readings: { $each: readings[sensorType] }}},
         { upsert: true }
       )
+      // sort the readings in descending order
       await Sensor.findOneAndUpdate(
         { name: data[0].location, sensorType: sensorType },
         { $push: { readings: { $each: [], $sort: { datetime: -1 }}}}

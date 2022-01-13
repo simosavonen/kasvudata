@@ -8,6 +8,12 @@ sensorsRouter.get('/', (request, response) => {
   })
 })
 
+sensorsRouter.get('/:id', (request, response, next) => {
+  Sensor.find({ _id: request.params.id})
+    .then(sensor => response.json(sensor))
+    .catch(error => next(error))
+})
+
 sensorsRouter.post('/', (request, response, next) => {
   const body = request.body
 

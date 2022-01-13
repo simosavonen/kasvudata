@@ -1,5 +1,6 @@
 const config = require('./utils/config')
 const logger = require('./utils/logger')
+const middleware = require('./utils/middleware')
 const express = require('express')
 const app = express()
 
@@ -21,5 +22,8 @@ app.use(express.json())
 
 app.use('/api/sensors', sensorsRouter)
 app.use('/api/files', filesRouter)
+
+app.use(middleware.unknownEndpoint)
+app.use(middleware.errorHandler)
 
 module.exports = app
