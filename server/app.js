@@ -7,6 +7,11 @@ const app = express()
 const sensorsRouter = require('./controllers/sensors')
 const filesRouter = require('./controllers/files')
 
+const swaggerJsDoc = require('swagger-jsdoc')
+const swaggerUI = require('swagger-ui-express')
+const openApiSpecifications = swaggerJsDoc(config.SWAGGER_OPTIONS)
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(openApiSpecifications))
+
 const mongoose = require('mongoose')
 //mongoose.set('debug', true)
 
