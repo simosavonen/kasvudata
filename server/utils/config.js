@@ -16,8 +16,8 @@ const SWAGGER_OPTIONS = {
     },
     servers: [
       {
-        url: `http://localhost:${PORT}`,
-        description: 'Development server',
+        url: `http://localhost:${PORT}/api`,
+        description: 'Development server'
       },
     ],
   },
