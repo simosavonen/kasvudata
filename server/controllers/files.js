@@ -6,7 +6,8 @@ const { parse } = require('fast-csv')
 const logger = require('../utils/logger')
 const dayjs = require('dayjs')
 
-const isValidated = (row) => {
+const validate = (row) => {
+  const errors = []
   const tomorrow = dayjs().add('1', 'day')
   const date = dayjs(row.datetime)
   
@@ -22,10 +23,24 @@ const isValidated = (row) => {
     'pH': 14
   }
 
-  return minValues[row.sensorType] !== undefined &&
-         row.value >= minValues[row.sensorType] && 
-         row.value <= maxValues[row.sensorType] &&
-         date.isBefore(tomorrow)
+  const headers = ['location', 'datetime', 'sensorType', 'value']
+  const validHeaders = Object.keys(row).every(header => headers.includes(header))
+  if(!validHeaders || minValues[row.sensorType] === undefined) {
+    errors.push({ error: 'missing a property', ...row })
+    return errors
+  }
+    
+  if(row.value < minValues[row.sensorType])
+    errors.push({ error: 'value is too low', ...row })
+
+  if(row.value > maxValues[row.sensorType])
+    errors.push({ error: 'value is too high', ...row })
+
+  if(!date.isBefore(tomorrow))
+    errors.push({ error: 'datetime is in the future', ...row })
+
+  return errors
+
 }
 
 const saveToDatabase = async (data) => {
@@ -40,12 +55,12 @@ const saveToDatabase = async (data) => {
     pH: []
   }
   
-  let validatedCount = 0
-  for (const row of data) {    
-    if(isValidated(row)) {
-      validatedCount++
-      readings[row.sensorType].push({ datetime: row.datetime, value: row.value })
-    } 
+  const validationErrors = []
+  for (const row of data) {
+    const errors = validate(row)
+    validationErrors.push(...errors)
+    if(errors.length === 0)       
+      readings[row.sensorType].push({ datetime: row.datetime, value: row.value })          
   }
 
   try {
@@ -65,16 +80,64 @@ const saveToDatabase = async (data) => {
   } catch (error) {
     logger.error(error)
   }
-  return Promise.resolve(validatedCount) 
+  return Promise.resolve(validationErrors) 
 }
 
+
+/**
+ * @openapi
+ * /files:
+ *   get:
+ *     summary: Serves a HTML form for uploading CSV data.
+ *     tags:
+ *       - files
+ *     responses:
+ *       '200':
+ *         description: A HTML form
+ */
 filesRouter.get('/', (request, response) => {
   response.sendFile(path.resolve('static', 'upload_csv.html'))
 })
 
+/**
+ * @openapi
+ * /files:
+ *   post:
+ *     summary: Parses the uploaded CSV file
+ *     tags:
+ *       - files
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fileName:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       '201':
+ *         description: Report on how many passed validation
+ *         content:
+ *           'application/json':
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 parsed:
+ *                   type: number
+ *                   description: number of rows parsed
+ *                 validated:
+ *                   type: number
+ *                   description: number of validated rows
+ *                 errors:
+ *                   type: array
+ *                   description: the rows that failed validation and the reasons
+ *                   items:
+ *                     $ref: '#/components/schemas/ValidationError'            
+ */
 filesRouter.post('/', (request, response) => {
   let rows = []
-  let validatedCount = 0
+  const validationErrors = []
  
   const bb = busboy({ headers: request.headers })
   bb.on('file', (name, file) => {
@@ -87,18 +150,18 @@ filesRouter.post('/', (request, response) => {
           parser.pause()
           const result = await saveToDatabase(rows)            
           rows = []
-          validatedCount += result
-          parser.resume()
-                
+          validationErrors.push(...result)
+          parser.resume()                
         }        
       }) 
       .on('end', async rowCount => {
         if(rows.length > 0) {
           const result = await saveToDatabase(rows)            
-          validatedCount += result
+          validationErrors.push(...result)
           response.status(201).json({ 
             parsed: rowCount,
-            validated: validatedCount              
+            validated: rowCount - validationErrors.length,
+            errors: validationErrors              
           })                  
         }
       })
