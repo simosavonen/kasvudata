@@ -152,6 +152,10 @@ sensorsRouter.post('/', (request, response, next) => {
  *           'application/json':
  *             schema:
  *               $ref: '#/components/schemas/Sensor'
+ *       '404':
+ *         description: no sensor found with that ID
+ *       '400':
+ *         description: malformatted ID
  */
 sensorsRouter.put('/:id', (request, response, next) => {
   const body = request.body
@@ -161,8 +165,11 @@ sensorsRouter.put('/:id', (request, response, next) => {
   }
 
   Sensor.findByIdAndUpdate(request.params.id, sensor, { new: true})
-    .then(updatedSensor => {
-      response.json(updatedSensor)
+    .then(updatedSensor => { 
+      if(updatedSensor) { response.json(updatedSensor) }
+      else {
+        response.status(404).end()
+      }
     })
     .catch(error => next(error))
 })
@@ -171,7 +178,7 @@ sensorsRouter.put('/:id', (request, response, next) => {
  * @openapi
  * /sensors/{id}:
  *   delete:
- *     summary: removes a sensor
+ *     summary: removes a sensor and it's readings
  *     tags:
  *       - sensors
  *     parameters:
@@ -183,12 +190,19 @@ sensorsRouter.put('/:id', (request, response, next) => {
  *         description: The MongoDB ObjectId of the sensor to remove
  *     responses:
  *       '204':
- *         description: no content, sensor was removed succesfully     
+ *         description: no content, sensor was removed succesfully
+ *       '404':
+ *         description: no sensor found with that ID
+ *       '400':
+ *         description: malformatted ID   
  */
 sensorsRouter.delete('/:id', (request, response, next) => {
   Sensor.findByIdAndRemove(request.params.id)
-    .then(() => {
-      response.status(204).end()
+    .then(deleted => {
+      if(deleted) { response.status(204).end() }
+      else {
+        response.status(404).end()
+      }      
     })
     .catch(error => next(error))
 })

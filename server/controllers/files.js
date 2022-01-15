@@ -1,88 +1,9 @@
 const filesRouter = require('express').Router()
-const Sensor = require('../models/sensor')
 const path = require('path')
 const busboy = require('busboy')
 const { parse } = require('fast-csv')
 const logger = require('../utils/logger')
-const dayjs = require('dayjs')
-
-const validate = (row) => {
-  const errors = []
-  const tomorrow = dayjs().add('1', 'day')
-  const date = dayjs(row.datetime)
-  
-  const minValues = {
-    'rainFall': 0,
-    'temperature': -50,
-    'pH': 0
-  }
-  
-  const maxValues = {
-    'rainFall': 500,
-    'temperature': 100,
-    'pH': 14
-  }
-
-  const headers = ['location', 'datetime', 'sensorType', 'value']
-  const validHeaders = Object.keys(row).every(header => headers.includes(header))
-  if(!validHeaders || minValues[row.sensorType] === undefined) {
-    errors.push({ error: 'missing a property', ...row })
-    return errors
-  }
-    
-  if(row.value < minValues[row.sensorType])
-    errors.push({ error: 'value is too low', ...row })
-
-  if(row.value > maxValues[row.sensorType])
-    errors.push({ error: 'value is too high', ...row })
-
-  if(!date.isBefore(tomorrow))
-    errors.push({ error: 'datetime is in the future', ...row })
-
-  return errors
-
-}
-
-const saveToDatabase = async (data) => {
-  if(data.length == 0 || data[0].location === undefined) {
-    logger.error('saveToDatabase was given bad data')
-    return 
-  }
-
-  const readings = {
-    rainFall: [],
-    temperature: [],
-    pH: []
-  }
-  
-  const validationErrors = []
-  for (const row of data) {
-    const errors = validate(row)
-    validationErrors.push(...errors)
-    if(errors.length === 0)       
-      readings[row.sensorType].push({ datetime: row.datetime, value: row.value })          
-  }
-
-  try {
-    for (const sensorType in readings) {
-      // prevent duplicates while adding readings      
-      await Sensor.findOneAndUpdate(
-        { name: data[0].location, sensorType: sensorType },
-        { $addToSet: { readings: { $each: readings[sensorType] }}},
-        { upsert: true }
-      )
-      // sort the readings in descending order
-      await Sensor.findOneAndUpdate(
-        { name: data[0].location, sensorType: sensorType },
-        { $push: { readings: { $each: [], $sort: { datetime: -1 }}}}
-      )
-    }   
-  } catch (error) {
-    logger.error(error)
-  }
-  return Promise.resolve(validationErrors) 
-}
-
+const { saveToDatabase } = require('./helpers')
 
 /**
  * @openapi
@@ -103,7 +24,7 @@ filesRouter.get('/', (request, response) => {
  * @openapi
  * /files:
  *   post:
- *     summary: Parses the uploaded CSV file
+ *     summary: Parses the uploaded CSV file, saves readings to the database, discarding duplicates.
  *     tags:
  *       - files
  *     requestBody:
