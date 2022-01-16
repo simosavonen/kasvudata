@@ -6,7 +6,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "test": "cross-env NODE_EVN=test jest --verbose --runInBand",
+    "test": "cross-env NODE_ENV=test jest --verbose --runInBand",
     "lint": "eslint . --fix"
   },
   "repository": {
@@ -21,6 +21,7 @@
     "eslint": "^8.6.0",
     "eslint-plugin-jest": "^25.3.4",
     "jest": "^27.4.5",
+    "mongodb-memory-server": "^8.2.0",
     "nodemon": "^2.0.15",
     "supertest": "^6.1.6"
   },

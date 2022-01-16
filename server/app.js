@@ -13,15 +13,17 @@ const openApiSpecifications = swaggerJsDoc(config.SWAGGER_OPTIONS)
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(openApiSpecifications))
 
 const mongoose = require('mongoose')
-//mongoose.set('debug', true)
 
-mongoose.connect(config.MONGODB_URI)
-  .then(() => {
-    logger.info('connected to MongoDB')
-  })
-  .catch((error) => {
-    logger.error('error connecting to MongoDB:', error.message)
-  })
+// testing uses an in-memory database
+if(process.env.NODE_ENV !== 'test') {  
+  mongoose.connect(config.MONGODB_URI)
+    .then(() => {
+      logger.info('connected to MongoDB')
+    })
+    .catch((error) => {
+      logger.error('error connecting to MongoDB:', error.message)
+    })
+}
 
 app.use(express.json())
 
