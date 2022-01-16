@@ -4,6 +4,10 @@ const middleware = require('./utils/middleware')
 const express = require('express')
 const app = express()
 
+const cors = require('cors')
+app.use(cors())
+
+
 const sensorsRouter = require('./controllers/sensors')
 const filesRouter = require('./controllers/files')
 
@@ -26,6 +30,8 @@ if(process.env.NODE_ENV !== 'test') {
 }
 
 app.use(express.json())
+
+app.use(express.static('public'))
 
 app.use('/api/sensors', sensorsRouter)
 app.use('/api/files', filesRouter)

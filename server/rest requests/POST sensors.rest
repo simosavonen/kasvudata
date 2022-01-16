@@ -1,4 +1,4 @@
-POST http://localhost:3001/api/sensors HTTP/1.1
+POST http://localhost:6868/api/sensors HTTP/1.1
 Content-Type: application/json
 
 {
