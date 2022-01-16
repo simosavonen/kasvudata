@@ -1,4 +1,4 @@
-location,datetime,sensorType,value
-Noora's farm,2019-01-02T11:19:44.018Z,wind,5
-Noora's farm,2019-01-02T11:19:44.018Z,sunshine,90
-Noora's farm,2023-01-02T11:19:44.018Z,rainFall,10
+datetime,sensorType,value
+2019-01-02T11:19:44.018Z,wind,5
+2019-01-02T11:19:44.018Z,sunshine,90
+2099-01-02T11:19:44.018Z,rainFall,10

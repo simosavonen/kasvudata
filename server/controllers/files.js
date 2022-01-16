@@ -67,7 +67,7 @@ filesRouter.post('/', (request, response) => {
       .on('error', error => logger.error(error))
       .on('data', async row => {        
         rows.push(row)
-        if(rows.length > 999) {
+        if(rows.length >= 1000) {
           parser.pause()
           const result = await saveToDatabase(rows)            
           rows = []

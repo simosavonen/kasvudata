@@ -39,19 +39,14 @@ const validate = (row) => {
   
 }
 
-const saveToDatabase = async (data) => {
-  if(data.length == 0 || data[0].location === undefined) {
-    logger.error('saveToDatabase was given bad data')
-    return 
-  }
-  
+const saveToDatabase = async (data) => { 
+  const validationErrors = []
   const readings = {
     rainFall: [],
     temperature: [],
     pH: []
   }
-    
-  const validationErrors = []
+  
   for (const row of data) {
     const errors = validate(row)
     validationErrors.push(...errors)
@@ -76,7 +71,7 @@ const saveToDatabase = async (data) => {
   } catch (error) {
     logger.error(error)
   }
-  return Promise.resolve(validationErrors) 
+  return validationErrors 
 }
 
 module.exports = {
