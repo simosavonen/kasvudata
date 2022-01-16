@@ -3,12 +3,20 @@
 # Kasvudata
 Upload and review sensor readings to keep the crops happy and your farm productive. 
 
+<div align="center">
+
+  [![Status](https://img.shields.io/badge/status-active-success.svg)]() 
+  [![GitHub Issues](https://img.shields.io/github/issues/simosavonen/kasvudata.svg)](https://github.com/simosavonen/kasvudata/issues)
+  [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/simosavonen/kasvudata.svg)](https://github.com/simosavonen/kasvudata/pulls)
+  [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
+
+</div>
+
 ## 📝 Table of Contents
 - [About](#about)
 - [Getting Started](#getting_started)
 - [Running the tests](#tests)
 - [API reference](#apidoc)
-
 - [Built Using](#built_using)
 
 
@@ -21,15 +29,12 @@ The frontend is a simple React client for displaying the 30 most recent entries 
 
   
 ## 🏁 Getting Started <a name = "getting_started"></a>
-
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
 ### Prerequisites
-
 Make sure you have a recent version of <a href="https://nodejs.org/en/" rel="noopener">Node.js</a> installed. To use the containers you will need to install <a href="https://www.docker.com/" rel="noopener">Docker</a> for your system. 
 
 ### The backend server
-
 Clone the repository.
 
 ```
@@ -50,13 +55,11 @@ The command to shut down the docker containers: `docker-compose down`
 The backend should now be running at http://localhost:6868/api
 
 ### 📓 API reference <a name = "apidoc"></a>
-
 The Swagger generated API documentation is found at http://localhost:6868/api-docs
 
 To upload CSV files, you can use the Swagger api-docs or open http://localhost:6868/api/files
 
 ### The frontend client
-
 Install Node.js modules and start the React client
 
 ```
