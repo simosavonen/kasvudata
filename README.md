@@ -1,7 +1,10 @@
+<br>
+<br>
+<br>
+<h1 align="center">Kasvudata</h1>
+<p align="center">Upload and review sensor readings to keep the crops happy and your farm productive.</p> 
 
-
-# Kasvudata
-Upload and review sensor readings to keep the crops happy and your farm productive. 
+***
 
 <div align="center">
 
