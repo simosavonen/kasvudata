@@ -1,6 +1,6 @@
 <br>
 <br>
-<h1 align="center"><img width=100px src="./logo.png" alt="Kasvudata logo"> Kasvudata</h1>
+<h1 align="center"><img height=50px src="./logo.png" alt="Kasvudata logo"> Kasvudata</h1>
 <p align="center">Upload and review sensor readings to keep the crops happy and your farm productive.</p> 
 
 <div align="center">
